@@ -16,7 +16,7 @@ export function GlassCard({
   return (
     <Card
       className={cn(
-        "backdrop-blur-xl bg-background/30 border-muted/20 shadow-xl",
+        "py-2 backdrop-blur-xl bg-background/30 border-muted/20 shadow-2xl shadow-violet-500/20",
         className
       )}
       {...props}
