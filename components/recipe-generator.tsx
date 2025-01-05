@@ -148,7 +148,7 @@ export default function RecipeGenerator() {
           <div className="space-y-6">
             <GlassCard>
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold">
+                <h2 className="text-lg font-semibold">
                   <GradientText>{recipe.recipeName}</GradientText>
                 </h2>
 
