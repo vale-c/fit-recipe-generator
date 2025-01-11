@@ -76,15 +76,12 @@ export async function generateRecipe(userInput: string) {
     ]);
 
     let rawResponse = await result.response.text();
-    console.log("Raw Response:", rawResponse);
 
     // Step 1: Remove leading/trailing whitespace
     rawResponse = rawResponse.trim();
 
     // Step 2: Remove Markdown formatting (e.g., backticks, "```json")
     rawResponse = rawResponse.replace(/```(?:json)?/g, "").trim();
-
-    console.log("Sanitized Response:", rawResponse);
 
     // Step 3: Attempt to parse the cleaned JSON
     const response = JSON.parse(rawResponse);
