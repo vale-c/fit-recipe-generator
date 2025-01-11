@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useTransition } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, ChefHat } from "lucide-react";
@@ -14,13 +14,11 @@ import { RecipeSkeleton } from "@/components/ui/recipe-skeleton";
 export function RecipeGenerator() {
   const [userInput, setUserInput] = useState("");
   const [recipe, setRecipe] = useState<Recipe | null>(null);
-  const [status, setStatus] = useState<
-    "idle" | "loading" | "error" | "success"
-  >("idle");
   const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
-  const handleGenerateRecipe = useCallback(async () => {
+  const handleGenerateRecipe = useCallback(() => {
     if (!userInput.trim()) {
       toast({
         title: "Error",
@@ -30,22 +28,21 @@ export function RecipeGenerator() {
       return;
     }
 
-    setStatus("loading");
-    setError(null); // Clear any previous error
+    setError(null); // Clear previous error
 
-    try {
-      const result = await generateRecipe(userInput);
-      setRecipe(result.recipe);
-      setStatus("success");
-      toast({
-        title: "Recipe Generated!",
-        description: "Your custom fitness recipe is ready.",
-      });
-    } catch (error: unknown) {
-      console.error("Error generating recipe:", error);
-      setError("Failed to generate recipe. Please try again.");
-      setStatus("error");
-    }
+    startTransition(async () => {
+      try {
+        const result = await generateRecipe(userInput);
+        setRecipe(result.recipe);
+        toast({
+          title: "Recipe Generated!",
+          description: "Your custom fitness recipe is ready.",
+        });
+      } catch (error: unknown) {
+        console.error("Error generating recipe:", error);
+        setError("Failed to generate recipe. Please try again.");
+      }
+    });
   }, [userInput, toast]);
 
   return (
@@ -66,11 +63,8 @@ export function RecipeGenerator() {
               onChange={(e) => setUserInput(e.target.value)}
               className="flex-grow"
             />
-            <Button
-              onClick={handleGenerateRecipe}
-              disabled={status === "loading"}
-            >
-              {status === "loading" ? (
+            <Button onClick={handleGenerateRecipe} disabled={isPending}>
+              {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Generating...
@@ -82,13 +76,13 @@ export function RecipeGenerator() {
           </div>
         </div>
       </GlassCard>
-      {status === "loading" && <RecipeSkeleton />}
-      {status === "error" && (
+      {isPending && <RecipeSkeleton />}
+      {error && (
         <GlassCard>
           <p className="text-red-500">{error}</p>
         </GlassCard>
       )}
-      {status === "success" && recipe && <RecipeDisplay recipe={recipe} />}
+      {recipe && !isPending && <RecipeDisplay recipe={recipe} />}
     </div>
   );
 }
