@@ -14,7 +14,7 @@ import { GradientText } from "./ui/gradient-text";
 
 export function AboutContent() {
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 pb-8">
       <header className="text-center">
         <h1 className="text-4xl font-bold mb-4">
           <GradientText>About AI Fitness Recipe Generator</GradientText>
@@ -99,12 +99,12 @@ export function AboutContent() {
                     Enter Your Ingredients or Preferences
                     <p className="ml-6 text-muted-foreground">
                       Type in the ingredients you have on hand or specify your
-                      dietary preferences (e.g., "high-protein vegetarian meal"
-                      or "low-carb dinner with chicken").
+                      dietary preferences (e.g., &quot;high-protein vegetarian
+                      meal&quot; or &quot;low-carb dinner with chicken&quot;).
                     </p>
                   </li>
                   <li className="font-semibold">
-                    Click "Generate"
+                    Click &quot;Generate&quot;
                     <p className="ml-6 text-muted-foreground">
                       Our AI will process your input and create a custom recipe
                       tailored to your needs.
