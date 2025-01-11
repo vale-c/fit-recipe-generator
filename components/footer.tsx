@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 
 export async function Footer() {
-  "use cache";
   return (
     <footer className="fixed bottom-0 w-full bg-background/90">
       <Separator />
