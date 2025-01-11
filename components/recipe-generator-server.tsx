@@ -39,8 +39,8 @@ You are a professional fitness chef and recipe generator. Your role is to create
 
 7. **Output Format**:
    - Respond directly with the structured recipe in JSON format.
-   - Avoid any additional text, explanations, or Markdown formatting (e.g., backticks).
-   - Return only:
+   - Exclude any additional text, explanations, or Markdown formatting (e.g., backticks).
+   - Return only the direct JSON object with the recipe details:
      {
        "thought": "Explain your reasoning here.",
        "recipe": {
