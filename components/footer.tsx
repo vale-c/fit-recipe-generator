@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 
-export function Footer() {
+export async function Footer() {
+  "use cache";
   return (
-    <footer className="mt-8 py-4">
+    <footer className="fixed bottom-0 w-full bg-background/90">
       <Separator />
       <div className="py-4 text-center text-sm text-muted-foreground">
         <p>

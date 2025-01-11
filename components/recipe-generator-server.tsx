@@ -77,20 +77,18 @@ export async function generateRecipe(userInput: string) {
 
     let rawResponse = await result.response.text();
 
-    // Step 1: Remove leading/trailing whitespace
-    rawResponse = rawResponse.trim();
+    // Step 1: Clean JSON
+    rawResponse = rawResponse
+      .trim()
+      .replace(/```(?:json)?/g, "")
+      .trim();
 
-    // Step 2: Remove Markdown formatting (e.g., backticks, "```json")
-    rawResponse = rawResponse.replace(/```(?:json)?/g, "").trim();
-
-    // Step 3: Attempt to parse the cleaned JSON
+    // Step 2: Parse JSON
     const response = JSON.parse(rawResponse);
 
-    // Step 4: Sanitize macros
+    // Step 3: Sanitize macros
     if (response.recipe && response.recipe.macros) {
       const macros = response.recipe.macros;
-
-      // Ensure proper formatting of units
       macros.protein = sanitizeMacroValue(macros.protein, "g");
       macros.carbs = sanitizeMacroValue(macros.carbs, "g");
       macros.fats = sanitizeMacroValue(macros.fats, "g");

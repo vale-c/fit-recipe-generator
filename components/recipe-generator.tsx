@@ -1,48 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, ChefHat, Dumbbell } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { generateRecipe } from "./recipe-generator-server";
+import { Loader2, ChefHat } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
-import { GradientText } from "@/components/ui/gradient-text";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Progress } from "@/components/ui/progress";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
-
-interface Ingredient {
-  ingredient: string;
-  quantity: string;
-}
-
-interface Recipe {
-  recipeName: string;
-  ingredients: Ingredient[];
-  macros: {
-    protein: number;
-    carbs: number;
-    fats: number;
-    calories: number;
-  };
-  steps: string[];
-}
+import { RecipeDisplay } from "@/components/recipe-display";
+import { generateRecipe } from "./recipe-generator-server";
+import { Recipe } from "./recipe-display";
+import { useToast } from "@/hooks/use-toast";
+import { RecipeSkeleton } from "@/components/ui/recipe-skeleton";
 
 export function RecipeGenerator() {
   const [userInput, setUserInput] = useState("");
   const [recipe, setRecipe] = useState<Recipe | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "error" | "success"
+  >("idle");
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleGenerateRecipe = async () => {
+  const handleGenerateRecipe = useCallback(async () => {
     if (!userInput.trim()) {
       toast({
         title: "Error",
@@ -52,64 +30,23 @@ export function RecipeGenerator() {
       return;
     }
 
-    setIsLoading(true);
+    setStatus("loading");
+    setError(null); // Clear any previous error
+
     try {
       const result = await generateRecipe(userInput);
       setRecipe(result.recipe);
+      setStatus("success");
       toast({
         title: "Recipe Generated!",
         description: "Your custom fitness recipe is ready.",
       });
     } catch (error: unknown) {
       console.error("Error generating recipe:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate recipe. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+      setError("Failed to generate recipe. Please try again.");
+      setStatus("error");
     }
-  };
-
-  const MacroCard = ({
-    label,
-    value,
-    max,
-    unit,
-  }: {
-    label: string;
-    value: string | number;
-    max: number;
-    unit: string;
-  }) => {
-    // Ensure value includes the unit and format it properly
-    const displayValue =
-      typeof value === "number" ? `${value}${unit}` : value.toString();
-
-    return (
-      <HoverCard>
-        <HoverCardTrigger asChild>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>{label}</span>
-              <span>{displayValue}</span>
-            </div>
-            <Progress value={(parseFloat(value as string) / max) * 100} />
-          </div>
-        </HoverCardTrigger>
-        <HoverCardContent className="w-80">
-          <div className="space-y-2">
-            <h4 className="text-sm font-semibold">{label} Information</h4>
-            <p className="text-sm">
-              {displayValue} out of recommended {max}
-              {unit} for this meal.
-            </p>
-          </div>
-        </HoverCardContent>
-      </HoverCard>
-    );
-  };
+  }, [userInput, toast]);
 
   return (
     <div className="space-y-8">
@@ -129,8 +66,11 @@ export function RecipeGenerator() {
               onChange={(e) => setUserInput(e.target.value)}
               className="flex-grow"
             />
-            <Button onClick={handleGenerateRecipe} disabled={isLoading}>
-              {isLoading ? (
+            <Button
+              onClick={handleGenerateRecipe}
+              disabled={status === "loading"}
+            >
+              {status === "loading" ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Generating...
@@ -142,169 +82,13 @@ export function RecipeGenerator() {
           </div>
         </div>
       </GlassCard>
-
-      {isLoading ? (
-        <RecipeSkeleton />
-      ) : (
-        recipe && (
-          <div className="space-y-6">
-            <GlassCard>
-              <div className="space-y-6">
-                <h2 className="text-lg font-semibold">
-                  <GradientText>{recipe.recipeName}</GradientText>
-                </h2>
-
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Dumbbell className="h-5 w-5 text-muted-foreground" />
-                    <h3 className="text-lg font-medium">Macros</h3>
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <MacroCard
-                      label="Protein"
-                      value={recipe.macros.protein}
-                      max={50}
-                      unit="g"
-                    />
-                    <MacroCard
-                      label="Carbs"
-                      value={recipe.macros.carbs}
-                      max={100}
-                      unit="g"
-                    />
-                    <MacroCard
-                      label="Fats"
-                      value={recipe.macros.fats}
-                      max={40}
-                      unit="g"
-                    />
-                    <MacroCard
-                      label="Calories"
-                      value={recipe.macros.calories}
-                      max={800}
-                      unit="kcal"
-                    />
-                  </div>
-                </div>
-              </div>
-            </GlassCard>
-
-            <Tabs defaultValue="ingredients" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="ingredients">Ingredients</TabsTrigger>
-                <TabsTrigger value="instructions">Instructions</TabsTrigger>
-              </TabsList>
-              <TabsContent value="ingredients">
-                <GlassCard>
-                  <ScrollArea className="h-[300px] pr-4">
-                    <div className="space-y-4">
-                      {recipe.ingredients.map((ing, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
-                        >
-                          <span>{ing.ingredient}</span>
-                          <Badge variant="secondary">{ing.quantity}</Badge>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </GlassCard>
-              </TabsContent>
-              <TabsContent value="instructions">
-                <GlassCard>
-                  <ScrollArea className="h-[300px] pr-4">
-                    <div className="space-y-4">
-                      {recipe.steps.map((step, index) => (
-                        <div
-                          key={index}
-                          className="flex space-x-4 p-3 rounded-lg bg-muted/50"
-                        >
-                          <div className="flex-none">
-                            <Badge variant="outline">{index + 1}</Badge>
-                          </div>
-                          <p>{step}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </GlassCard>
-              </TabsContent>
-            </Tabs>
-          </div>
-        )
+      {status === "loading" && <RecipeSkeleton />}
+      {status === "error" && (
+        <GlassCard>
+          <p className="text-red-500">{error}</p>
+        </GlassCard>
       )}
-    </div>
-  );
-}
-
-function RecipeSkeleton() {
-  return (
-    <div className="space-y-6">
-      <GlassCard>
-        <div className="space-y-6">
-          <Skeleton className="h-8 w-3/4" />
-
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Skeleton className="h-5 w-5 rounded-full" />
-              <Skeleton className="h-6 w-1/4" />
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <div className="flex justify-between">
-                    <Skeleton className="h-4 w-1/4" />
-                    <Skeleton className="h-4 w-1/4" />
-                  </div>
-                  <Skeleton className="h-2 w-full" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </GlassCard>
-
-      <Tabs defaultValue="ingredients" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="ingredients">Ingredients</TabsTrigger>
-          <TabsTrigger value="instructions">Instructions</TabsTrigger>
-        </TabsList>
-        <TabsContent value="ingredients">
-          <GlassCard>
-            <ScrollArea className="h-[300px] pr-4">
-              <div className="space-y-4">
-                {[...Array(6)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
-                  >
-                    <Skeleton className="h-4 w-1/2" />
-                    <Skeleton className="h-6 w-1/4" />
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </GlassCard>
-        </TabsContent>
-        <TabsContent value="instructions">
-          <GlassCard>
-            <ScrollArea className="h-[300px] pr-4">
-              <div className="space-y-4">
-                {[...Array(4)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex space-x-4 p-3 rounded-lg bg-muted/50"
-                  >
-                    <Skeleton className="h-6 w-6 rounded-full" />
-                    <Skeleton className="h-4 w-full" />
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </GlassCard>
-        </TabsContent>
-      </Tabs>
+      {status === "success" && recipe && <RecipeDisplay recipe={recipe} />}
     </div>
   );
 }
