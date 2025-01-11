@@ -12,7 +12,7 @@ import { ChefHat, Dumbbell, Zap, Lightbulb, Heart } from "lucide-react";
 import Link from "next/link";
 import { GradientText } from "./ui/gradient-text";
 
-export default function AboutContent() {
+export function AboutContent() {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <header className="text-center">
@@ -34,8 +34,8 @@ export default function AboutContent() {
         <CardContent>
           <p className="text-muted-foreground">
             At AI Fitness Recipe Generator, we believe that achieving your
-            fitness goals shouldn't mean sacrificing flavor or spending hours in
-            the kitchen. Our mission is to empower fitness enthusiasts,
+            fitness goals shouldn&apos;t mean sacrificing flavor or spending
+            hours in the kitchen. Our mission is to empower fitness enthusiasts,
             athletes, and health-conscious individuals with an AI-powered tool
             that creates delicious, nutrient-dense recipes tailored to their
             specific needs and preferences.

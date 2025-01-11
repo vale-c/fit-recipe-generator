@@ -8,7 +8,7 @@ You are a professional fitness chef and recipe generator. Your role is to create
 ### GUIDELINES:
 1. **Understand Context and Flavor Profiles**:
    - Use your culinary expertise to infer whether the recipe should be **sweet** or **savory** based on the provided ingredients.
-  - For example: Ingredients like "berries, honey, and oats" suggest a sweet dish.
+     - For example: Ingredients like "berries, honey, and oats" suggest a sweet dish.
      - Conversely, ingredients like "chicken, spinach, and garlic" suggest a savory dish.
    - Avoid combining ingredients in unnatural ways that would lead to poor flavor profiles (e.g., mixing chicken with honey unless for a recognized culinary style like honey-glazed chicken).
    - Always prioritize **deliciousness** and practicality in the recipe.
@@ -21,30 +21,32 @@ You are a professional fitness chef and recipe generator. Your role is to create
      - **Fruits**: Blueberries, citrus, pomegranate.
      - **Carbs**: Oats, quinoa, legumes (use sparingly in recipes that should be sweet).
 
-3. **Ingredient Quantities**:
+3. **Accurate Macros and Calories**:
+   - Accurately calculate macros based on ingredient quantities:
+     - **Protein, Carbs, and Fats**: Use **g** (grams).
+     - **Calories**: Use **kcal** (kilocalories).
+   - Ensure total macros logically align with the calorie count:
+     - **Formula**: Calories = (Protein × 4) + (Carbs × 4) + (Fats × 9).
+     - Flag discrepancies if the macros don’t match the calorie value.
+   - Provide a balanced macronutrient profile suitable for active individuals.
+
+4. **Ingredient Quantities**:
    - Use **grams (g)** for all solid ingredients.
    - Use **milliliters (ml)** for liquids.
    - For small quantities like oil or spices, use teaspoons (e.g., 1 tsp olive oil).
 
-4. **Accurate Macros and Calories**:
-   - Accurately calculate macros based on ingredient quantities.
-   - Ensure total macros align with the provided ingredients (e.g., a 50g portion of oats contains ~2.5g fat, ~28g carbs, ~5g protein).
-   - Use this format for units:
-     - **g** for grams (never "gg").
-     - **ml** for milliliters.
-     - **kcal** for calories.
-   - Verify that the **macronutrient breakdown** (protein, carbs, fats) adds up logically to the total calorie count.
-
 5. **Simple and Practical Recipes**:
    - Limit recipes to a maximum of **6 steps** for simplicity.
-   - Provide clear, concise instructions suitable for users of all skill levels.
+   - Provide clear, concise instructions suitable for people of all skill levels.
 
 6. **Respond to User Preferences**:
-   - Adjust recipes based on dietary preferences (e.g., vegetarian, keto, low-fat).
+   - Adjust recipes based on dietary preferences or restrictions (e.g., vegetarian, keto, low-fat).
    - Incorporate special requests like "extra protein," "low carb," or "meal prep."
 
 7. **Output Format**:
-   - Respond only with a structured JSON object:
+   - Respond directly with the structured recipe in JSON format.
+   - Exclude any additional text, explanations, or Markdown formatting (e.g., backticks).
+   - Return only the JSON object with the recipe details:
      {
        "thought": "Explain your reasoning here.",
        "recipe": {
@@ -56,12 +58,13 @@ You are a professional fitness chef and recipe generator. Your role is to create
          "steps": ["Step 1", "Step 2", "..."]
        }
      }
-
-8. **Strict Formatting**:
-   - Always use consistent units (g, ml, kcal).
-   - Avoid formatting errors (e.g., no "gg").
-   - Validate that macros align with ingredient quantities.
 `;
+
+function sanitizeMacroValue(value: string | number, unit: string): string {
+  if (typeof value === "number") return `${value}${unit}`;
+  // Remove repeated units and ensure proper formatting
+  return value.replace(new RegExp(`(${unit})+`, "g"), unit).trim();
+}
 
 export async function generateRecipe(userInput: string) {
   try {
@@ -72,8 +75,31 @@ export async function generateRecipe(userInput: string) {
       { text: userInput },
     ]);
 
-    const rawResponse = await result.response.text();
+    let rawResponse = await result.response.text();
+    console.log("Raw Response:", rawResponse);
+
+    // Step 1: Remove leading/trailing whitespace
+    rawResponse = rawResponse.trim();
+
+    // Step 2: Remove Markdown formatting (e.g., backticks, "```json")
+    rawResponse = rawResponse.replace(/```(?:json)?/g, "").trim();
+
+    console.log("Sanitized Response:", rawResponse);
+
+    // Step 3: Attempt to parse the cleaned JSON
     const response = JSON.parse(rawResponse);
+
+    // Step 4: Sanitize macros
+    if (response.recipe && response.recipe.macros) {
+      const macros = response.recipe.macros;
+
+      // Ensure proper formatting of units
+      macros.protein = sanitizeMacroValue(macros.protein, "g");
+      macros.carbs = sanitizeMacroValue(macros.carbs, "g");
+      macros.fats = sanitizeMacroValue(macros.fats, "g");
+      macros.calories = sanitizeMacroValue(macros.calories, "kcal");
+    }
+
     return response;
   } catch (error) {
     console.error("Error generating recipe:", error);

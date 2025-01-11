@@ -1,4 +1,4 @@
-import RecipeGenerator from "@/components/recipe-generator";
+import { RecipeGenerator } from "@/components/recipe-generator";
 
 export default function Home() {
   return (

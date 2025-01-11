@@ -36,7 +36,7 @@ interface Recipe {
   steps: string[];
 }
 
-export default function RecipeGenerator() {
+export function RecipeGenerator() {
   const [userInput, setUserInput] = useState("");
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -79,35 +79,37 @@ export default function RecipeGenerator() {
     unit,
   }: {
     label: string;
-    value: number;
+    value: string | number;
     max: number;
     unit: string;
-  }) => (
-    <HoverCard>
-      <HoverCardTrigger asChild>
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>{label}</span>
-            <span>
-              {value}
-              {unit}
-            </span>
+  }) => {
+    // Ensure value includes the unit and format it properly
+    const displayValue =
+      typeof value === "number" ? `${value}${unit}` : value.toString();
+
+    return (
+      <HoverCard>
+        <HoverCardTrigger asChild>
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span>{label}</span>
+              <span>{displayValue}</span>
+            </div>
+            <Progress value={(parseFloat(value as string) / max) * 100} />
           </div>
-          <Progress value={(value / max) * 100} />
-        </div>
-      </HoverCardTrigger>
-      <HoverCardContent className="w-80">
-        <div className="space-y-2">
-          <h4 className="text-sm font-semibold">{label} Information</h4>
-          <p className="text-sm">
-            {value}
-            {unit} out of recommended {max}
-            {unit} for this meal.
-          </p>
-        </div>
-      </HoverCardContent>
-    </HoverCard>
-  );
+        </HoverCardTrigger>
+        <HoverCardContent className="w-80">
+          <div className="space-y-2">
+            <h4 className="text-sm font-semibold">{label} Information</h4>
+            <p className="text-sm">
+              {displayValue} out of recommended {max}
+              {unit} for this meal.
+            </p>
+          </div>
+        </HoverCardContent>
+      </HoverCard>
+    );
+  };
 
   return (
     <div className="space-y-8">

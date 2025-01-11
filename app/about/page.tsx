@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import AboutContent from "@/components/about-content";
+import { AboutContent } from "@/components/about-content";
 
 export const metadata: Metadata = {
   title: "About AI Fitness Recipe Generator",
