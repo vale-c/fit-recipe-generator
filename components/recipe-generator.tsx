@@ -62,7 +62,7 @@ export function RecipeGenerator() {
         </h1>
         <p className="text-muted-foreground max-w-[700px] mx-auto">
           Transform your ingredients into delicious, high-protein fitness meals
-          with AI. Just tell us what you have or what you're craving.
+          with AI. Just tell us what you have or what you&apos;re craving.
         </p>
       </div>
 
