@@ -107,40 +107,6 @@ export function RecipeGenerator() {
     });
   }, [userInput, selectedDiet, toast]);
 
-  // Filter examples based on selected diet
-  const getCompatibleExamples = (diet: string) => {
-    // Default examples
-    const allExamples = [
-      "High-protein breakfast with eggs and spinach",
-      "Keto dinner with chicken and avocado",
-      "Quick post-workout protein smoothie",
-      "Vegan lunch with 30g protein",
-      "Low-carb meal with salmon",
-    ];
-
-    if (diet === "any") return allExamples;
-
-    // Filter examples based on diet
-    return allExamples.filter((example) => {
-      if (
-        diet === "vegan" &&
-        (example.includes("eggs") ||
-          example.includes("chicken") ||
-          example.includes("salmon") ||
-          example.includes("protein smoothie"))
-      ) {
-        return false;
-      }
-      if (
-        diet === "vegetarian" &&
-        (example.includes("chicken") || example.includes("salmon"))
-      ) {
-        return false;
-      }
-      return true;
-    });
-  };
-
   // Add more detailed examples to better showcase Gemini's capabilities
   const getDetailedExamples = (diet: string) => {
     const allExamples = [
