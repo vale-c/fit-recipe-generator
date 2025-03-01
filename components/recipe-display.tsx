@@ -1,11 +1,12 @@
 "use client";
 
 import { GlassCard } from "@/components/ui/glass-card";
-import { Dumbbell, Wheat, Droplets, Flame } from "lucide-react";
+import { Dumbbell, Wheat, Droplets, Flame, Printer, Share } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface Ingredient {
   ingredient: string;
@@ -58,6 +59,145 @@ const MacroCard = ({
   );
 };
 
+function RecipeActions({ recipe }: { recipe: Recipe }) {
+  const handlePrint = () => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    const content = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>${recipe.recipeName}</title>
+        <style>
+          body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+          h1 { text-align: center; margin-bottom: 30px; }
+          .macros { display: flex; justify-content: space-around; margin-bottom: 30px; }
+          .macro-item { text-align: center; }
+          h2 { margin-top: 30px; }
+          .ingredient { margin-bottom: 8px; }
+          .step { margin-bottom: 12px; }
+        </style>
+      </head>
+      <body>
+        <h1>${recipe.recipeName}</h1>
+        
+        <div class="macros">
+          <div class="macro-item">
+            <div>Protein</div>
+            <div><strong>${recipe.macros.protein}</strong></div>
+          </div>
+          <div class="macro-item">
+            <div>Carbs</div>
+            <div><strong>${recipe.macros.carbs}</strong></div>
+          </div>
+          <div class="macro-item">
+            <div>Fats</div>
+            <div><strong>${recipe.macros.fats}</strong></div>
+          </div>
+          <div class="macro-item">
+            <div>Calories</div>
+            <div><strong>${recipe.macros.calories}</strong></div>
+          </div>
+        </div>
+        
+        <h2>Ingredients</h2>
+        <div>
+          ${recipe.ingredients
+            .map(
+              (ing) => `
+            <div class="ingredient">• ${ing.ingredient} - ${ing.quantity}</div>
+          `
+            )
+            .join("")}
+        </div>
+        
+        <h2>Instructions</h2>
+        <div>
+          ${recipe.steps
+            .map(
+              (step, index) => `
+            <div class="step">${index + 1}. ${step}</div>
+          `
+            )
+            .join("")}
+        </div>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.open();
+    printWindow.document.write(content);
+    printWindow.document.close();
+    printWindow.addEventListener("load", () => {
+      printWindow.print();
+    });
+  };
+
+  const handleShare = () => {
+    // Format recipe details for sharing
+    const ingredientsList = recipe.ingredients
+      .map((ing) => `• ${ing.ingredient} - ${ing.quantity}`)
+      .join("\n");
+
+    const stepsList = recipe.steps
+      .map((step, i) => `${i + 1}. ${step}`)
+      .join("\n");
+
+    const recipeText = `${recipe.recipeName}
+
+MACROS:
+• Protein: ${recipe.macros.protein}
+• Carbs: ${recipe.macros.carbs}
+• Fats: ${recipe.macros.fats}
+• Calories: ${recipe.macros.calories}
+
+INGREDIENTS:
+${ingredientsList}
+
+INSTRUCTIONS:
+${stepsList}`;
+
+    if (navigator.share) {
+      navigator
+        .share({
+          title: recipe.recipeName,
+          text: recipeText,
+          url: window.location.href,
+        })
+        .catch((error) => console.log("Error sharing", error));
+    } else {
+      // Fallback for browsers that don't support share API
+      navigator.clipboard.writeText(recipeText).then(() => {
+        alert("Recipe copied to clipboard!");
+      });
+    }
+  };
+
+  return (
+    <div className="flex justify-center gap-2 mt-4">
+      <Button
+        variant="outline"
+        size="sm"
+        className="flex items-center gap-1"
+        onClick={handlePrint}
+      >
+        <Printer className="h-4 w-4" />
+        <span>Print</span>
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        className="flex items-center gap-1"
+        onClick={handleShare}
+      >
+        <Share className="h-4 w-4" />
+        <span>Share</span>
+      </Button>
+    </div>
+  );
+}
+
 export function RecipeDisplay({ recipe }: { recipe: Recipe }) {
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-500">
@@ -95,6 +235,8 @@ export function RecipeDisplay({ recipe }: { recipe: Recipe }) {
         </div>
       </div>
 
+      <RecipeActions recipe={recipe} />
+
       <Tabs defaultValue="ingredients" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="ingredients">Ingredients</TabsTrigger>
@@ -102,7 +244,7 @@ export function RecipeDisplay({ recipe }: { recipe: Recipe }) {
         </TabsList>
         <TabsContent value="ingredients">
           <GlassCard>
-            <ScrollArea className="h-[300px] pr-4">
+            <ScrollArea className="h-[400px] pr-4 mb-4">
               <div className="space-y-4">
                 {recipe.ingredients.map((ing, index) => (
                   <div
@@ -117,9 +259,9 @@ export function RecipeDisplay({ recipe }: { recipe: Recipe }) {
             </ScrollArea>
           </GlassCard>
         </TabsContent>
-        <TabsContent value="instructions">
+        <TabsContent value="instructions" className="p-4">
           <GlassCard>
-            <ScrollArea className="h-[300px] pr-4">
+            <ScrollArea className="h-[400px] pr-4 mb-4">
               <div className="space-y-4">
                 {recipe.steps.map((step, index) => (
                   <div

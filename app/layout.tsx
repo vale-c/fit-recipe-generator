@@ -15,9 +15,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
@@ -29,7 +29,7 @@ export default function RootLayout({
         >
           <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
             <Navbar />
-            {children}
+            <div className="pb-24">{children}</div>
           </div>
           <Footer />
           <Toaster />

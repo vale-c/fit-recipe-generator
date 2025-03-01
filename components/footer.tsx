@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 
-export async function Footer() {
+export function Footer() {
   return (
-    <footer className="fixed bottom-0 w-full bg-background/90">
+    <footer className="fixed bottom-0 left-0 right-0 w-full bg-background/95 backdrop-blur-sm z-10">
       <Separator />
       <div className="py-4 text-center text-sm text-muted-foreground">
         <p>
