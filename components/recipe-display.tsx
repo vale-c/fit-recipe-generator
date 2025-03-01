@@ -1,17 +1,11 @@
 "use client";
 
 import { GlassCard } from "@/components/ui/glass-card";
-import { GradientText } from "@/components/ui/gradient-text";
-import { Dumbbell } from "lucide-react";
+import { Dumbbell, Wheat, Droplets, Flame } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 interface Ingredient {
   ingredient: string;
@@ -31,86 +25,75 @@ export interface Recipe {
 }
 
 const MacroCard = ({
-  label,
+  title,
   value,
-  unit,
-  max,
+  icon,
+  color,
 }: {
-  label: string;
-  max: number;
+  title: string;
   value: string | number;
-  unit: string;
+  icon: React.ReactNode;
+  color: string;
 }) => {
-  // Ensure value includes the unit and format it properly
-  const displayValue =
-    typeof value === "number" ? `${value}${unit}` : value.toString();
+  const colorClasses = {
+    blue: "border-blue-200/30 bg-blue-50/30 dark:bg-blue-950/30",
+    green: "border-green-200/30 bg-green-50/30 dark:bg-green-950/30",
+    amber: "border-amber-200/30 bg-amber-50/30 dark:bg-amber-950/30",
+    red: "border-red-200/30 bg-red-50/30 dark:bg-red-950/30",
+  };
 
   return (
-    <HoverCard>
-      <HoverCardTrigger asChild>
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>{label}</span>
-            <span className="font-semibold">{displayValue}</span>
-          </div>
-          <Progress value={(parseFloat(value as string) / max) * 100} />
-        </div>
-      </HoverCardTrigger>
-      <HoverCardContent className="w-80">
-        <div className="space-y-2">
-          <h4 className="text-sm font-semibold">{label} Information</h4>
-          <p className="text-sm">
-            {displayValue} out of recommended {max}
-            {unit} for this meal.
-          </p>
-        </div>
-      </HoverCardContent>
-    </HoverCard>
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center rounded-xl border p-2 shadow-sm",
+        colorClasses[color as keyof typeof colorClasses]
+      )}
+    >
+      <div className="flex items-center space-x-1 text-sm font-medium text-muted-foreground">
+        {icon}
+        <span>{title}</span>
+      </div>
+      <p className="font-semibold">{value}</p>
+    </div>
   );
 };
 
 export function RecipeDisplay({ recipe }: { recipe: Recipe }) {
   return (
-    <div className="space-y-6">
-      <GlassCard>
-        <div className="space-y-6">
-          <h2 className="text-lg font-semibold">
-            <GradientText>{recipe.recipeName}</GradientText>
-          </h2>
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Dumbbell className="h-5 w-5 text-muted-foreground" />
-              <h3 className="text-lg font-medium">Macros</h3>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <MacroCard
-                label="Protein"
-                value={recipe.macros.protein}
-                unit="g"
-                max={100}
-              />
-              <MacroCard
-                label="Carbs"
-                value={recipe.macros.carbs}
-                unit="g"
-                max={80}
-              />
-              <MacroCard
-                label="Fats"
-                value={recipe.macros.fats}
-                unit="g"
-                max={40}
-              />
-              <MacroCard
-                label="Calories"
-                value={recipe.macros.calories}
-                unit="kcal"
-                max={600}
-              />
-            </div>
+    <div className="space-y-6 animate-in fade-in-50 duration-500">
+      <div className="space-y-2">
+        <h2 className="text-2xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500">
+          {recipe.recipeName}
+        </h2>
+        <div className="flex justify-center">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-2">
+            <MacroCard
+              title="Protein"
+              value={recipe.macros.protein}
+              icon={<Dumbbell className="h-4 w-4 text-blue-500" />}
+              color="blue"
+            />
+            <MacroCard
+              title="Carbs"
+              value={recipe.macros.carbs}
+              icon={<Wheat className="h-4 w-4 text-amber-500" />}
+              color="amber"
+            />
+            <MacroCard
+              title="Fats"
+              value={recipe.macros.fats}
+              icon={<Droplets className="h-4 w-4 text-green-500" />}
+              color="green"
+            />
+            <MacroCard
+              title="Calories"
+              value={recipe.macros.calories}
+              icon={<Flame className="h-4 w-4 text-red-500" />}
+              color="red"
+            />
           </div>
         </div>
-      </GlassCard>
+      </div>
 
       <Tabs defaultValue="ingredients" className="w-full">
         <TabsList className="grid w-full grid-cols-2">

@@ -16,17 +16,20 @@ export function GlassCard({
   return (
     <Card
       className={cn(
-        "py-2 backdrop-blur-xl bg-background/30 border-muted/20 shadow-2xl shadow-violet-500/20",
+        "relative overflow-hidden border border-border/40 backdrop-blur-sm bg-card/50 shadow-xl",
         className
       )}
       {...props}
     >
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
       {title && (
-        <CardHeader>
+        <CardHeader className="relative">
           <CardTitle>{title}</CardTitle>
         </CardHeader>
       )}
-      <CardContent>{children}</CardContent>
+      <CardContent className={cn("relative", !title && "pt-6")}>
+        {children}
+      </CardContent>
     </Card>
   );
 }
